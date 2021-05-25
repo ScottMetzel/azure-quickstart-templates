@@ -526,34 +526,11 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2020-12-01",
-            "name": "[concat(variables('vMNameArray')[copyIndex('AddAppHealthExtensions')],'/',variables('vMExtensionApplicationHealthNameBase'))]",
-            "location": "[variables('deploymentRegion')]",
-            "condition": "[parameters('DeployCSExtension')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddAppHealthExtensions')],'MMAExtension')]"
-            ],
-            "copy": {
-                "name": "AddAppHealthExtensions",
-                "count": "[parameters('VMCount')]"
-            },
-            "properties": {
-                "publisher": "Microsoft.ManagedServices",
-                "type": "ApplicationHealthWindows",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "protocol": "tcp",
-                    "port": 3389
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "apiVersion": "2020-12-01",
             "name": "[concat(variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'/',variables('vMExtensionCustomScriptNameBase'))]",
             "location": "[variables('deploymentRegion')]",
             "condition": "[parameters('DeployCSExtension')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],variables('vMExtensionApplicationHealthNameBase'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'MMAExtension')]"
             ],
             "copy": {
                 "name": "AddCustomScriptExtensions",
