@@ -4,6 +4,8 @@
     "parameters": {
         "BaseName": {
             "type": "string",
+            "minLength": 2,
+            "maxLength": 12,
             "metadata": {
                 "description": "The base name for the VMs."
             }
@@ -57,7 +59,7 @@
             "type": "int",
             "defaultValue": 2,
             "minValue": 2,
-            "maxValue": 10,
+            "maxValue": 200,
             "metadata": {
                 "description": "The number of VMs to create."
             }
@@ -157,25 +159,18 @@
                 "description": "The value for the 'Environment' tag."
             }
         },
-        "_artifactsLocation": {
-            "type": "string",
+        "DeployCSExtension": {
+            "type": "bool",
+            "defaultValue": true,
             "metadata": {
-                "description": "The location of resources, such as templates and DSC modules, that the template depends on"
-            },
-            "defaultValue": "[deployment().properties.templateLink.uri]"
-        },
-        "_artifactsLocationSasToken": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Auto-generated token to access _artifactsLocation. Leave it blank unless you need to provide your own value."
-            },
-            "defaultValue": ""
+                "description": "Indicates whether the Custom Script Extension should be deployed."
+            }
         }
     },
     "variables": {
         "deploymentEnvironmentInitial": "[toUpper(first(parameters('TagEnvironment')))]",
         "deploymentRegion": "[resourceGroup().location]",
-        "firstSequenceNumberString": "[format('{00}', parameters('BaseSequenceNumber'))]",
+        "firstSequenceNumberString": "[format('{0:00}', parameters('BaseSequenceNumber'))]",
         "pipResourceName": "[toUpper(concat(variables('deploymentEnvironmentInitial'), '-PIP-', parameters('BaseName'), '-', variables('firstSequenceNumberString')))]",
         "pipDomainNameLabel": "[toLower(concat(parameters('BaseName'), 'PLB', variables('firstSequenceNumberString')))]",
         "pipFQDN": "[toLower(concat(variables('pipDomainNameLabel'), variables('deploymentRegion'), '.cloudapp.azure.com'))]",
@@ -199,33 +194,33 @@
         "loadBalancerHealthProbeName": "[concat(parameters('BaseName'), '-HealthProbe-', variables('firstSequenceNumberString'))]",
         "loadBalancerDiagnosticsName": "[concat(variables('loadBalancerResourceName'),'-Diagnostics-01')]",
         "vmPrivateStaticIPAddressStringArray": "[split(parameters('VMFirstPrivateStaticIPAddress'),'.')]",
-        "vMPrivateStaticIPAddressLastOctetArray": "[range(last(variables('vMPrivateStaticIPAddressArray')),parameters('VMCount'))]",
         "vMSubnetResourceID": "[concat(parameters('VNetResourceID'),'/subnets/',parameters('VMSubnetName'))]",
+        "vmssExtensionCSENameBase": "CustomScript-InstallRoles",
         "copy": [
             {
                 "name": "networkInterfaceNameArray",
                 "count": "[parameters('VMCount')]",
-                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex(parameters('BaseSequenceNumber'))), '-NIC-01')]"
+                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex('networkInterfaceNameArray', parameters('BaseSequenceNumber'))), '-NIC-01')]"
             },
             {
                 "name": "vMNameArray",
                 "count": "[parameters('VMCount')]",
-                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex(parameters('BaseSequenceNumber'))))]"
+                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex('vMNameArray', parameters('BaseSequenceNumber'))))]"
             },
             {
                 "name": "vMOSDiskNameArray",
                 "count": "[parameters('VMCount')]",
-                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex(parameters('BaseSequenceNumber'))), '-DISK-01')]"
+                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex('vMOSDiskNameArray', parameters('BaseSequenceNumber'))), '-DISK-01')]"
             },
             {
                 "name": "vMDataDiskNameArray",
                 "count": "[parameters('VMCount')]",
-                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex(parameters('BaseSequenceNumber'))), '-DISK-02')]"
+                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex('vMDataDiskNameArray', parameters('BaseSequenceNumber'))), '-DISK-02')]"
             },
             {
                 "name": "vMPrivateStaticIPAddressArray",
                 "count": "[parameters('VMCount')]",
-                "input": "[concat(variables('vmPrivateStaticIPAddressStringArray')[0], '.', variables('vmPrivateStaticIPAddressStringArray')[1], '.', variables('vmPrivateStaticIPAddressStringArray')[2], '.', variables('vMPrivateStaticIPAddressLastOctetArray')[copyIndex('vMPrivateStaticIPAddressArray')])]"
+                "input": "[concat(variables('vmPrivateStaticIPAddressStringArray')[0], '.', variables('vmPrivateStaticIPAddressStringArray')[1], '.', variables('vmPrivateStaticIPAddressStringArray')[2], '.', range(int(last(variables('vmPrivateStaticIPAddressStringArray'))),parameters('VMCount'))[copyIndex('vMPrivateStaticIPAddressArray')])]"
             }
         ]
     },
@@ -464,12 +459,13 @@
                 "count": "[parameters('VMCount')]"
             },
             "properties": {
-                "hardwareProfile": {
-                    "vmSize": "[parameters('VMSize')]"
-                },
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetResourceName'))]"
                 },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('VMSize')]"
+                },
+                "licenseType": "[if(parameters('HybridUseBenefit'),'Windows_Server',json('null'))]",
                 "osProfile": {
                     "computerName": "[variables('vMNameArray')[copyIndex('CreateVirtualMachines')]]",
                     "adminUsername": "[parameters('adminUsername')]",
@@ -513,28 +509,30 @@
             },
             "tags": {
                 "Environment": "[parameters('TagEnvironment')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'/',variables('vmssExtensionCSENameBase'))]",
+            "location": "[resourceGroup().location]",
+            "condition": "[parameters('DeployCSExtension')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines',variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')])]"
+            ],
+            "copy": {
+                "name": "AddCustomScriptExtensions",
+                "count": "[parameters('VMCount')]"
             },
-            "resources": [
-                {
-                    "type": "extensions",
-                    "apiVersion": "2020-12-01",
-                    "name": "CSExtension-InstallRoles",
-                    "location": "[variables('deploymentRegion')]",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', variables('vMNameArray')[copyIndex('CreateVirtualMachines')])]"
-                    ],
-                    "properties": {
-                        "publisher": "Microsoft.Powershell",
-                        "type": "DSC",
-                        "typeHandlerVersion": "2.19",
-                        "autoUpgradeMinorVersion": true,
-                        "settings": {
-                            "ModulesUrl": "[uri(parameters('_artifactsLocation'), concat('DSC/CreateADPDC.zip', parameters('_artifactsLocationSasToken')))]",
-                            "ConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC"
-                        }
-                    }
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "1.10",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command ''Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools''"
                 }
-            ]
+            }
         }
     ]
 }
