@@ -587,7 +587,7 @@
         },
         "LoadBalancerPrivateIPAddress": {
             "type": "string",
-            "condition": "[equals(parameters('LoadBalancerAccessibility'),'Public')]",
+            "condition": "[equals(parameters('LoadBalancerAccessibility'),'Internal')]",
             "value": "[reference(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerResourceName')),'Full').frontendIPConfigurations[0].privateIPAddress]"
         },
         "LoadBalancerPublicIPAddress": {
@@ -597,7 +597,7 @@
         },
         "LoadBalancerSubnetResourceID": {
             "type": "string",
-            "condition": "[equals(parameters('LoadBalancerAccessibility'),'Public')]",
+            "condition": "[equals(parameters('LoadBalancerAccessibility'),'Internal')]",
             "value": "[variables('vNetLoadBalancerSubnetResourceID')]"
         }
     }
