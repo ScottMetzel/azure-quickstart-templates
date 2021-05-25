@@ -214,22 +214,22 @@
             {
                 "name": "networkInterfaceNameArray",
                 "count": "[parameters('VMCount')]",
-                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex('networkInterfaceNameArray', parameters('BaseSequenceNumber'))), '-NIC-01')]"
+                "input": "[concat(parameters('BaseName'),format('{0:00}', copyIndex('networkInterfaceNameArray', parameters('BaseSequenceNumber'))), '-NIC-01')]"
             },
             {
                 "name": "vMNameArray",
                 "count": "[parameters('VMCount')]",
-                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex('vMNameArray', parameters('BaseSequenceNumber'))))]"
+                "input": "[concat(parameters('BaseName'),format('{0:00}', copyIndex('vMNameArray', parameters('BaseSequenceNumber'))))]"
             },
             {
                 "name": "vMOSDiskNameArray",
                 "count": "[parameters('VMCount')]",
-                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex('vMOSDiskNameArray', parameters('BaseSequenceNumber'))), '-DISK-01')]"
+                "input": "[concat(parameters('BaseName'),format('{0:00}', copyIndex('vMOSDiskNameArray', parameters('BaseSequenceNumber'))), '-DISK-01')]"
             },
             {
                 "name": "vMDataDiskNameArray",
                 "count": "[parameters('VMCount')]",
-                "input": "[concat(parameters('BaseName'),format('{00}', copyIndex('vMDataDiskNameArray', parameters('BaseSequenceNumber'))), '-DISK-02')]"
+                "input": "[concat(parameters('BaseName'),format('{0:00}', copyIndex('vMDataDiskNameArray', parameters('BaseSequenceNumber'))), '-DISK-02')]"
             },
             {
                 "name": "vMPrivateStaticIPAddressArray",
