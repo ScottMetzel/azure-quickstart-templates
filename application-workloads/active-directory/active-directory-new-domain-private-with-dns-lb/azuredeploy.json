@@ -90,7 +90,7 @@
                 "description": "Indicates whether to create a diagnostics setting for the Load Balancer. Requires the Resource ID of a Log Analytics Workspace to work."
             }
         },
-        "WorkspaceId": {
+        "WorkspaceID": {
             "type": "string",
             "defaultValue": "",
             "metadata": {
