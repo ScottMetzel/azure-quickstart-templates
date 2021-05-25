@@ -194,7 +194,7 @@
         "loadBalancerHealthProbeName": "[concat(parameters('BaseName'), '-HealthProbe-', variables('firstSequenceNumberString'))]",
         "loadBalancerDiagnosticsName": "[concat(variables('loadBalancerResourceName'),'-Diagnostics-01')]",
         "vmPrivateStaticIPAddressStringArray": "[split(parameters('VMFirstPrivateStaticIPAddress'),'.')]",
-        "vMSubnetResourceID": "[concat(parameters('VNetResourceID'),'/subnets/',parameters('VMSubnetName'))]",
+        "vNetVMSubnetResourceID": "[concat(parameters('VNetResourceID'),'/subnets/',parameters('VMSubnetName'))]",
         "vmssExtensionCSENameBase": "CustomScript-InstallRoles",
         "copy": [
             {
@@ -424,7 +424,7 @@
                             "privateIPAllocationMethod": "Static",
                             "privateIPAddress": "[variables('vMPrivateStaticIPAddressArray')[copyIndex('CreateNetworkInterfaces')]]",
                             "subnet": {
-                                "id": "[variables('vMSubnetResourceID')]"
+                                "id": "[variables('vNetVMSubnetResourceID')]"
                             },
                             "loadBalancerBackendAddressPools": [
                                 {
@@ -534,5 +534,58 @@
                 }
             }
         }
-    ]
+    ],
+    "outputs": {
+        "DeploymentRegion": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetResourceName'))).location]"
+        },
+        "VMNames": {
+            "type": "array",
+            "value": "[variables('vMNameArray')]"
+        },
+        "NetworkInterfaceNames": {
+            "type": "array",
+            "value": "[variables('networkInterfaceNameArray')]"
+        },
+        "VMPrivateStaticIPAddresses": {
+            "type": "array",
+            "value": "[variables('vMPrivateStaticIPAddressArray')]"
+        },
+        "VMOSDiskNames": {
+            "type": "array",
+            "value": "[variables('vMOSDiskNameArray')]"
+        },
+        "VMDataDiskNames": {
+            "type": "array",
+            "value": "[variables('vMDataDiskNameArray')]"
+        },
+        "VNetResourceID": {
+            "type": "string",
+            "value": "[parameters('VNetResourceID')]"
+        },
+        "vNetVMSubnetResourceID": {
+            "type": "string",
+            "value": "[variables('vNetVMSubnetResourceID')]"
+        },
+        "LoadBalancerName": {
+            "type": "string",
+            "value": "[variables('loadBalancerResourceName')]"
+        },
+        "LoadBalancerPrivateIPAddress": {
+            "type": "string",
+            "condition": "[equals(parameters('LoadBalancerAccessibility'),'Public')]",
+            "value": "[reference(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerResourceName')),'Full').frontendIPConfigurations[0].privateIPAddress]"
+        },
+        "LoadBalancerPublicIPAddress": {
+            "type": "string",
+            "condition": "[equals(parameters('LoadBalancerAccessibility'),'Public')]",
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('pipResourceName'))).ipAddress]"
+        },
+        "LoadBalancerSubnetResourceID": {
+            "type": "string",
+            "condition": "[equals(parameters('LoadBalancerAccessibility'),'Public')]",
+            "value": "[variables('vNetLoadBalancerSubnetResourceID')]"
+        }
+    }
 }
