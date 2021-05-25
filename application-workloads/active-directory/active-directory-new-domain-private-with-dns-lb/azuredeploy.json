@@ -90,6 +90,20 @@
                 "description": "Indicates whether to create a diagnostics setting for the Load Balancer. Requires the Resource ID of a Log Analytics Workspace to work."
             }
         },
+        "WorkspaceId": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The workspace ID of an existing Log Analytics workspace to use with the Log Analytics agent."
+            }
+        },
+        "WorkspaceKey": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The workspace key for the existing Log Analytics workspace."
+            }
+        },
         "WorkspaceResourceId": {
             "type": "string",
             "defaultValue": "",
@@ -433,7 +447,7 @@
                             ],
                             "loadBalancerInboundNatRules": [
                                 {
-                                    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', variables('loadBalancerResourceName'), variables('loadBalancerNATPoolName'))]"
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatPools', variables('loadBalancerResourceName'), variables('loadBalancerNATPoolName'))]"
                                 }
                             ]
                         }
