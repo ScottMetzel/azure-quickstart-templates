@@ -540,7 +540,7 @@
             "properties": {
                 "publisher": "Microsoft.Compute",
                 "type": "CustomScriptExtension",
-                "typeHandlerVersion": "1.10",
+                "typeHandlerVersion": "1.10.10",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools}"
