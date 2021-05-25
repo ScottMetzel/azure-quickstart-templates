@@ -206,7 +206,8 @@
         "loadBalancerDiagnosticsName": "[concat(variables('loadBalancerResourceName'),'-Diagnostics-01')]",
         "vmPrivateStaticIPAddressStringArray": "[split(parameters('VMFirstPrivateStaticIPAddress'),'.')]",
         "vNetVMSubnetResourceID": "[concat(parameters('VNetResourceID'),'/subnets/',parameters('VMSubnetName'))]",
-        "vmssExtensionCSENameBase": "CustomScript-InstallRoles",
+        "vMExtensionCustomScriptNameBase": "CustomScript-InstallRoles",
+        "vMExtensionApplicationHealthNameBase": "ApplicationHealthWindows",
         "copy": [
             {
                 "name": "networkInterfaceNameArray",
@@ -265,6 +266,9 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses',variables('pipResourceName'))]"
             ],
+            "sku": {
+                "name": "Standard"
+            },
             "properties": {
                 "frontendIPConfigurations": [
                     {
@@ -497,7 +501,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2020-12-01",
-            "name": "[concat(variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'/',variables('vmssExtensionCSENameBase'))]",
+            "name": "[concat(variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'/',variables('vMExtensionCustomScriptNameBase'))]",
             "location": "[resourceGroup().location]",
             "condition": "[parameters('DeployCSExtension')]",
             "dependsOn": [
@@ -513,7 +517,31 @@
                 "typeHandlerVersion": "1.10",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command ''Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools''"
+                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools; shutdown.exe -r -t 30}"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('vMNameArray')[copyIndex('AddAppHealthExtensions')],'/',variables('vMExtensionApplicationHealthNameBase'))]",
+            "location": "[resourceGroup().location]",
+            "condition": "[parameters('DeployCSExtension')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines',variables('vMNameArray')[copyIndex('AddAppHealthExtensions')])]"
+            ],
+            "copy": {
+                "name": "AddAppHealthExtensions",
+                "count": "[parameters('VMCount')]"
+            },
+            "properties": {
+                "publisher": "Microsoft.ManagedServices",
+                "type": "ApplicationHealthWindows",
+                "typeHandlerVersion": "1.0.9",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "protocol": "tcp",
+                    "port": 3389
                 }
             }
         }
