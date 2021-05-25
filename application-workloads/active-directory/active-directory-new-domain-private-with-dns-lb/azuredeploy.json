@@ -200,9 +200,6 @@
             "id": "[variables('vNetLoadBalancerSubnetResourceID')]"
         },
         "loadBalancerBackendPoolName": "[concat(variables('loadBalancerAcronym'), '-', 'BackEnd', '-', parameters('BaseName'), '-', variables('firstSequenceNumberString'))]",
-        "loadBalancerNATPoolName": "[concat(variables('loadBalancerAcronym'), '-', 'NATPool', '-', parameters('BaseName'), '-', variables('firstSequenceNumberString'))]",
-        "loadBalancerNATPoolPortRangeStart": 56000,
-        "loadBalancerNATPoolPortRangeEnd": "[add(variables('loadBalancerNATPoolPortRangeStart'), parameters('VMCount'))]",
         "loadBalancerLoadBalancingRuleName_DNS_TCP": "[concat(parameters('BaseName'), '-DNS-', 'TCP')]",
         "loadBalancerLoadBalancingRuleName_DNS_UDP": "[concat(parameters('BaseName'), '-DNS-', 'UDP')]",
         "loadBalancerHealthProbeName": "[concat(parameters('BaseName'), '-HealthProbe-', variables('firstSequenceNumberString'))]",
@@ -291,23 +288,6 @@
                     {
                         "name": "[variables('loadBalancerBackendPoolName')]",
                         "properties": {
-                        }
-                    }
-                ],
-                "inboundNatPools": [
-                    {
-                        "name": "[variables('loadBalancerNATPoolName')]",
-                        "properties": {
-                            "frontendPortRangeStart": "[variables('loadBalancerNATPoolPortRangeStart')]",
-                            "frontendPortRangeEnd": "[variables('loadBalancerNATPoolPortRangeEnd')]",
-                            "backendPort": 3389,
-                            "protocol": "Tcp",
-                            "idleTimeoutInMinutes": 4,
-                            "enableFloatingIP": false,
-                            "enableTcpReset": false,
-                            "frontendIPConfiguration": {
-                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerResourceName')), '/frontendIPConfigurations/', variables('loadBalancerFrontendConfigurationName'))]"
-                            }
                         }
                     }
                 ],
@@ -443,11 +423,6 @@
                             "loadBalancerBackendAddressPools": [
                                 {
                                     "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerResourceName'), variables('loadBalancerBackendPoolName'))]"
-                                }
-                            ],
-                            "loadBalancerInboundNatRules": [
-                                {
-                                    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatPools', variables('loadBalancerResourceName'), variables('loadBalancerNATPoolName'))]"
                                 }
                             ]
                         }
