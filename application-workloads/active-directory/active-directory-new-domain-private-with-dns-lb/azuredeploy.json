@@ -510,7 +510,7 @@
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
                 "type": "CustomScript",
-                "typeHandlerVersion": "1.10",
+                "typeHandlerVersion": "2.1.3",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command ''Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools''"
