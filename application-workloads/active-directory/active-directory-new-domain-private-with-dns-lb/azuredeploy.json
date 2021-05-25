@@ -516,7 +516,8 @@
                 "typeHandlerVersion": "1.0",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "workspaceId": "[reference(parameters('WorkspaceResourceId'), '2015-03-20').customerId]"
+                    "workspaceId": "[reference(parameters('WorkspaceResourceId'), '2015-03-20').customerId]",
+                    "stopOnMultipleConnections": "false"
                 },
                 "protectedSettings": {
                     "workspaceKey": "[listKeys(parameters('WorkspaceResourceId'), '2015-03-20').primarySharedKey]"
@@ -539,6 +540,7 @@
             "properties": {
                 "publisher": "Microsoft.Compute",
                 "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.10",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools}"
