@@ -253,9 +253,6 @@
                     "fqdn": "[variables('pipFQDN')]"
                 }
             },
-            "zones": [
-                "1"
-            ],
             "tags": {
                 "Environment": "[parameters('TagEnvironment')]"
             }
@@ -278,10 +275,7 @@
                             "publicIPAddress": "[if(equals(parameters('LoadBalancerAccessibility'),'Public'),variables('loadBalancerPIPProperty'),json('null'))]",
                             "privateIPAddressVersion": "[if(equals(parameters('LoadBalancerAccessibility'),'Internal'),'IPv4',json('null'))]",
                             "subnet": "[if(equals(parameters('LoadBalancerAccessibility'),'Internal'),variables('loadBalancerSubnetProperty'),json('null'))]"
-                        },
-                        "zones": [
-                            "1"
-                        ]
+                        }
                     }
                 ],
                 "backendAddressPools": [
