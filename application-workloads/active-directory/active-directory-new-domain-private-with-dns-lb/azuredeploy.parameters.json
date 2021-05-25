@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "BaseName": {
+            "value": "GEN-UNIQUE-12"
+        },
+        "adminUsername": {
+            "value": "GEN-UNIQUE"
+        },
+        "adminPassword": {
+            "value": "GEN-PASSWORD"
+        },
+        "VNetResourceID": {
+            "value": "GEN-VNET-NAME"
+        },
+        "VMSubnetName": {
+            "value": "GEN-VNET-SUBNET1-NAME"
+        },
+        "LBSubnetName": {
+            "value": "GEN-VNET-SUBNET2-NAME"
+        }
+    }
+}
