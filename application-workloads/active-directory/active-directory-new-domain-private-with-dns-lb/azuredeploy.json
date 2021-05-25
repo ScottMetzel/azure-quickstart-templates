@@ -543,7 +543,7 @@
                 "typeHandlerVersion": "1.0",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools}"
+                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools}\""
                 }
             }
         }
