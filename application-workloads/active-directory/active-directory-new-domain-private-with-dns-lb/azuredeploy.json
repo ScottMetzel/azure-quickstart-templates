@@ -551,7 +551,7 @@
     "outputs": {
         "DeploymentRegion": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetResourceName'))).location]"
+            "value": "[variables('deploymentRegion')]"
         },
         "VMNames": {
             "type": "array",
