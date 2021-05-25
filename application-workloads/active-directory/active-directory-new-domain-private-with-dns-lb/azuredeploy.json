@@ -501,23 +501,27 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2020-12-01",
-            "name": "[concat(variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'/',variables('vMExtensionCustomScriptNameBase'))]",
-            "location": "[resourceGroup().location]",
-            "condition": "[parameters('DeployCSExtension')]",
+            "name": "[concat(variables('vMNameArray')[copyIndex('AddMMAgents')],'/','MMAExtension')]",
+            "location": "[variables('deploymentRegion')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines',variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')])]"
+                "[resourceId('Microsoft.Compute/virtualMachines',variables('vMNameArray')[copyIndex('AddMMAgents')])]"
             ],
             "copy": {
-                "name": "AddCustomScriptExtensions",
+                "name": "AddMMAgents",
                 "count": "[parameters('VMCount')]"
             },
             "properties": {
-                "publisher": "Microsoft.Compute",
-                "type": "CustomScriptExtension",
-                "typeHandlerVersion": "1.10",
+                "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+                "type": "MicrosoftMonitoringAgent",
+                "typeHandlerVersion": "1.0",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools; shutdown.exe -r -t 30}"
+                    "workspaceId": "[reference(parameters('WorkspaceResourceId'), '2015-03-20').customerId]",
+                    "azureResourceId": "[reference(resourceId('Microsoft.Compute/virtualMachines',variables('vMNameArray')[copyIndex('AddMMAgents')])).resourceId]",
+                    "stopOnMultipleConnections": "true"
+                },
+                "protectedSettings": {
+                    "workspaceKey": "[listKeys(parameters('WorkspaceResourceId'), '2015-03-20').primarySharedKey]"
                 }
             }
         },
@@ -525,10 +529,10 @@
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2020-12-01",
             "name": "[concat(variables('vMNameArray')[copyIndex('AddAppHealthExtensions')],'/',variables('vMExtensionApplicationHealthNameBase'))]",
-            "location": "[resourceGroup().location]",
+            "location": "[variables('deploymentRegion')]",
             "condition": "[parameters('DeployCSExtension')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines',variables('vMNameArray')[copyIndex('AddAppHealthExtensions')])]"
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddAppHealthExtensions')],'MMAExtension')]"
             ],
             "copy": {
                 "name": "AddAppHealthExtensions",
@@ -537,11 +541,32 @@
             "properties": {
                 "publisher": "Microsoft.ManagedServices",
                 "type": "ApplicationHealthWindows",
-                "typeHandlerVersion": "1.0.9",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "protocol": "tcp",
                     "port": 3389
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'/',variables('vMExtensionCustomScriptNameBase'))]",
+            "location": "[variables('deploymentRegion')]",
+            "condition": "[parameters('DeployCSExtension')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],variables('vMExtensionApplicationHealthNameBase'))]"
+            ],
+            "copy": {
+                "name": "AddCustomScriptExtensions",
+                "count": "[parameters('VMCount')]"
+            },
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools}"
                 }
             }
         }
