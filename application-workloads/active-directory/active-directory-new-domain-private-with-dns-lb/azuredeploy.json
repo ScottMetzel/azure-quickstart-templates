@@ -527,11 +527,33 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2020-12-01",
+            "name": "[concat(variables('vMNameArray')[copyIndex('AddAntimalwareExtensions')],'/','IaaSAntimalware')]",
+            "location": "[variables('deploymentRegion')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddAntimalwareExtensions')],'MMAExtension')]"
+            ],
+            "copy": {
+                "name": "AddAntimalwareExtensions",
+                "count": "[parameters('VMCount')]"
+            },
+            "properties": {
+                "publisher": "Microsoft.Azure.Security",
+                "type": "IaaSAntimalware",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "AntimalwareEnabled": true
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2020-12-01",
             "name": "[concat(variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'/',variables('vMExtensionCustomScriptNameBase'))]",
             "location": "[variables('deploymentRegion')]",
             "condition": "[parameters('DeployCSExtension')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'MMAExtension')]"
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'IaaSAntimalware')]"
             ],
             "copy": {
                 "name": "AddCustomScriptExtensions",
