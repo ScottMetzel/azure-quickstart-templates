@@ -83,32 +83,18 @@
                 "description": "The password for the administrator account of the new VM and domain"
             }
         },
-        "DeployLoadBalancerDiagnostics": {
-            "type": "bool",
-            "defaultValue": false,
-            "metadata": {
-                "description": "Indicates whether to create a diagnostics setting for the Load Balancer. Requires the Resource ID of a Log Analytics Workspace to work."
-            }
-        },
-        "WorkspaceID": {
-            "type": "string",
+        "DefenderForIdentityAccessKey": {
+            "type": "securestring",
             "defaultValue": "",
             "metadata": {
-                "description": "The workspace ID of an existing Log Analytics workspace to use with the Log Analytics agent."
-            }
-        },
-        "WorkspaceKey": {
-            "type": "string",
-            "defaultValue": "",
-            "metadata": {
-                "description": "The workspace key for the existing Log Analytics workspace."
+                "description": "The access key for your Defender for Identity instance, which is needed by the Defender for Identity installer."
             }
         },
         "WorkspaceResourceId": {
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "The Resource ID of an existing Log Analytics workspace to use with diagnostics on the Load Balancer. Has no effect if 'DeployLoadBalancerDiagnostics' is set to 'false'."
+                "description": "The Resource ID of an existing Log Analytics workspace to use with diagnostics on the Load Balancer. Has no effect if 'EnableLoadBalancerDiagnostics' is set to 'false'."
             }
         },
         "VNetResourceID": {
@@ -173,11 +159,53 @@
                 "description": "The value for the 'Environment' tag."
             }
         },
-        "DeployCSExtension": {
+        "EnableLoadBalancerDiagnostics": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Indicates whether to create a diagnostics setting for the Load Balancer. Requires the Resource ID of a Log Analytics Workspace to work."
+            }
+        },
+        "DeployMonitoringAgentExtension": {
             "type": "bool",
             "defaultValue": true,
             "metadata": {
-                "description": "Indicates whether the Custom Script Extension should be deployed."
+                "description": "Indicates whether the Monitoring Agent Extension should be deployed."
+            }
+        },
+        "DeployAntimalwareExtension": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Indicates whether the IaaS Antimalware Extension should be deployed."
+            }
+        },
+        "DeployCSInstallDefenderForIdentityExtension": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Indicates whether the Custom Script Extension which installs Defender for Identity should be deployed."
+            }
+        },
+        "DeployCSInstallRolesExtension": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Indicates whether the Custom Script Extension which installs Windows Server roles should be deployed."
+            }
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "defaultValue": "[deployment().properties.templateLink.uri]",
+            "metadata": {
+                "description": "The location of resources, such as templates and DSC modules, which the template depends on."
+            }
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Token to access '_artifactsLocation'. Auto-generated if using Visual Studio."
             }
         }
     },
@@ -206,8 +234,10 @@
         "loadBalancerDiagnosticsName": "[concat(variables('loadBalancerResourceName'),'-Diagnostics-01')]",
         "vmPrivateStaticIPAddressStringArray": "[split(parameters('VMFirstPrivateStaticIPAddress'),'.')]",
         "vNetVMSubnetResourceID": "[concat(parameters('VNetResourceID'),'/subnets/',parameters('VMSubnetName'))]",
-        "vMExtensionCustomScriptNameBase": "CustomScript-InstallRoles",
-        "vMExtensionApplicationHealthNameBase": "ApplicationHealthWindows",
+        "vMExtensionCSInstallRolesNameBase": "CustomScript-InstallRoles",
+        "vMExtensionCSInstallDefenderForIdentityNameBase": "CustomScript-InstallDefenderForIdentity",
+        "defenderForIdentityContentURIs": "[createArray(concat(parameters('_artifactsLocation'),'installers/Azure%20ATP%20Sensor%20Setup.zip'))]",
+        "storageAccountName": "[last(split(split(parameters('_artifactsLocation'),'.')[0],'//'))]",
         "copy": [
             {
                 "name": "networkInterfaceNameArray",
@@ -356,12 +386,12 @@
             "apiVersion": "2017-05-01-preview",
             "name": "[concat(variables('loadBalancerResourceName'), '/Microsoft.Insights/', variables('loadBalancerDiagnosticsName'))]",
             "location": "[variables('deploymentRegion')]",
-            "condition": "[parameters('DeployLoadBalancerDiagnostics')]",
+            "condition": "[parameters('EnableLoadBalancerDiagnostics')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/loadBalancers',variables('loadBalancerResourceName'))]"
             ],
             "properties": {
-                "workspaceId": "[if(parameters('DeployLoadBalancerDiagnostics'),parameters('WorkspaceResourceId'),json('null'))]",
+                "workspaceId": "[if(parameters('EnableLoadBalancerDiagnostics'),parameters('WorkspaceResourceId'),json('null'))]",
                 "logs": [
                     {
                         "category": "LoadBalancerAlertEvent",
@@ -503,6 +533,7 @@
             "apiVersion": "2020-12-01",
             "name": "[concat(variables('vMNameArray')[copyIndex('AddMMAgents')],'/','MMAExtension')]",
             "location": "[variables('deploymentRegion')]",
+            "condition": "[parameters('DeployMonitoringAgentExtension')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines',variables('vMNameArray')[copyIndex('AddMMAgents')])]"
             ],
@@ -516,11 +547,11 @@
                 "typeHandlerVersion": "1.0",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "workspaceId": "[reference(parameters('WorkspaceResourceId'), '2015-03-20').customerId]",
+                    "workspaceId": "[reference(parameters('WorkspaceResourceId'), '2020-08-01').customerId]",
                     "stopOnMultipleConnections": "false"
                 },
                 "protectedSettings": {
-                    "workspaceKey": "[listKeys(parameters('WorkspaceResourceId'), '2015-03-20').primarySharedKey]"
+                    "workspaceKey": "[listKeys(parameters('WorkspaceResourceId'), '2020-08-01').primarySharedKey]"
                 }
             }
         },
@@ -529,6 +560,7 @@
             "apiVersion": "2020-12-01",
             "name": "[concat(variables('vMNameArray')[copyIndex('AddAntimalwareExtensions')],'/','IaaSAntimalware')]",
             "location": "[variables('deploymentRegion')]",
+            "condition": "[parameters('DeployAntimalwareExtension')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddAntimalwareExtensions')],'MMAExtension')]"
             ],
@@ -549,9 +581,36 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2020-12-01",
-            "name": "[concat(variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'/',variables('vMExtensionCustomScriptNameBase'))]",
+            "name": "[concat(variables('vMNameArray')[copyIndex('InstallDefenderForIdentity')],'/',variables('vMExtensionCSInstallDefenderForIdentityNameBase'))]",
             "location": "[variables('deploymentRegion')]",
-            "condition": "[parameters('DeployCSExtension')]",
+            "condition": "[parameters('DeployCSInstallDefenderForIdentityExtension')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('InstallDefenderForIdentity')],'IaaSAntimalware')]"
+            ],
+            "copy": {
+                "name": "InstallDefenderForIdentity",
+                "count": "[parameters('VMCount')]"
+            },
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {},
+                "protectedSettings": {
+                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Expand-Archive -Path '.\\installers\\Azure ATP Sensor Setup.zip' -DestinationPath '.\\installers\\'}\"",
+                    "fileUris": "[variables('defenderForIdentityContentURIs')]",
+                    "storageAccountName": "[variables('storageAccountName')]",
+                    "storageAccountKey": "[parameters('_artifactsLocationSasToken')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'/',variables('vMExtensionCSInstallRolesNameBase'))]",
+            "location": "[variables('deploymentRegion')]",
+            "condition": "[parameters('DeployCSInstallRolesExtension')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'IaaSAntimalware')]"
             ],
@@ -566,7 +625,8 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools}\""
-                }
+                },
+                "protectedSettings": {}
             }
         }
     ],
@@ -621,6 +681,10 @@
             "type": "string",
             "condition": "[equals(parameters('LoadBalancerAccessibility'),'Internal')]",
             "value": "[variables('vNetLoadBalancerSubnetResourceID')]"
+        },
+        "StorageAccountName": {
+            "type": "string",
+            "value": "[variables('storageAccountName')]"
         }
     }
 }
