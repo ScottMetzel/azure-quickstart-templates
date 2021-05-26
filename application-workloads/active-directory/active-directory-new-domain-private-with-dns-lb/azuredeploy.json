@@ -180,18 +180,11 @@
                 "description": "Indicates whether the IaaS Antimalware Extension should be deployed."
             }
         },
-        "DeployCSInstallDefenderForIdentityExtension": {
+        "DeployCSInstallRolesDefenderExtension": {
             "type": "bool",
             "defaultValue": true,
             "metadata": {
-                "description": "Indicates whether the Custom Script Extension which installs Defender for Identity should be deployed."
-            }
-        },
-        "DeployCSInstallRolesExtension": {
-            "type": "bool",
-            "defaultValue": true,
-            "metadata": {
-                "description": "Indicates whether the Custom Script Extension which installs Windows Server roles should be deployed."
+                "description": "Indicates whether the Custom Script Extension which installs Windows Server roles and installs Defender for Identity should be deployed."
             }
         },
         "_artifactsLocation": {
@@ -234,10 +227,9 @@
         "loadBalancerDiagnosticsName": "[concat(variables('loadBalancerResourceName'),'-Diagnostics-01')]",
         "vmPrivateStaticIPAddressStringArray": "[split(parameters('VMFirstPrivateStaticIPAddress'),'.')]",
         "vNetVMSubnetResourceID": "[concat(parameters('VNetResourceID'),'/subnets/',parameters('VMSubnetName'))]",
-        "vMExtensionCSInstallRolesNameBase": "CustomScript-InstallRoles",
-        "vMExtensionCSInstallDefenderForIdentityNameBase": "CustomScript-InstallDefenderForIdentity",
+        "vMExtensionCSInstallRolesDefenderforIdentityNameBase": "CustomScript-InstallRoles-and-InstallDefenderForIdentity",
         "defenderForIdentityContentURIs": "[createArray(concat(parameters('_artifactsLocation'),'installers/Azure%20ATP%20Sensor%20Setup.zip'))]",
-        "defenderForIdentityCommandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Expand-Archive -Path ''.\\Azure ATP Sensor Setup.zip'' -DestinationPath ''.\\'';.\\''Azure ATP Sensor Setup.exe'' /quiet NetFrameworkCommandLineArguments=''/q'' AccessKey=''',parameters('DefenderForIdentityAccessKey'),'''}\"')]",
+        "vMExtensionCSCommandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools;Expand-Archive -Path ''.\\Azure ATP Sensor Setup.zip'' -DestinationPath ''.\\'';.\\''Azure ATP Sensor Setup.exe'' /quiet NetFrameworkCommandLineArguments=''/q'' AccessKey=''',parameters('DefenderForIdentityAccessKey'),'''}\"')]",
         "storageAccountName": "[last(split(split(parameters('_artifactsLocation'),'.')[0],'//'))]",
         "copy": [
             {
@@ -582,36 +574,9 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2020-12-01",
-            "name": "[concat(variables('vMNameArray')[copyIndex('InstallDefenderForIdentity')],'/',variables('vMExtensionCSInstallDefenderForIdentityNameBase'))]",
+            "name": "[concat(variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'/',variables('vMExtensionCSInstallRolesDefenderforIdentityNameBase'))]",
             "location": "[variables('deploymentRegion')]",
-            "condition": "[parameters('DeployCSInstallDefenderForIdentityExtension')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('InstallDefenderForIdentity')],'IaaSAntimalware')]"
-            ],
-            "copy": {
-                "name": "InstallDefenderForIdentity",
-                "count": "[parameters('VMCount')]"
-            },
-            "properties": {
-                "publisher": "Microsoft.Compute",
-                "type": "CustomScriptExtension",
-                "typeHandlerVersion": "1.0",
-                "autoUpgradeMinorVersion": true,
-                "settings": {},
-                "protectedSettings": {
-                    "commandToExecute": "[variables('defenderForIdentityCommandToExecute')]",
-                    "fileUris": "[variables('defenderForIdentityContentURIs')]",
-                    "storageAccountName": "[variables('storageAccountName')]",
-                    "storageAccountKey": "[parameters('_artifactsLocationSasToken')]"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "apiVersion": "2020-12-01",
-            "name": "[concat(variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'/',variables('vMExtensionCSInstallRolesNameBase'))]",
-            "location": "[variables('deploymentRegion')]",
-            "condition": "[parameters('DeployCSInstallRolesExtension')]",
+            "condition": "[parameters('DeployCSInstallRolesDefenderExtension')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'IaaSAntimalware')]"
             ],
@@ -624,10 +589,13 @@
                 "type": "CustomScriptExtension",
                 "typeHandlerVersion": "1.0",
                 "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools}\""
-                },
-                "protectedSettings": {}
+                "settings": {},
+                "protectedSettings": {
+                    "commandToExecute": "[variables('vMExtensionCSCommandToExecute')]",
+                    "fileUris": "[variables('defenderForIdentityContentURIs')]",
+                    "storageAccountName": "[variables('storageAccountName')]",
+                    "storageAccountKey": "[parameters('_artifactsLocationSasToken')]"
+                }
             }
         }
     ],
