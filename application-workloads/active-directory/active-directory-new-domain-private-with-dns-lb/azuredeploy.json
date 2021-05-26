@@ -598,7 +598,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {},
                 "protectedSettings": {
-                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Expand-Archive -Path '.\\installers\\Azure ATP Sensor Setup.zip' -DestinationPath '.\\installers\\'}\"",
+                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Expand-Archive -Path '.\\Azure ATP Sensor Setup.zip' -DestinationPath '.\\'}\"",
                     "fileUris": "[variables('defenderForIdentityContentURIs')]",
                     "storageAccountName": "[variables('storageAccountName')]",
                     "storageAccountKey": "[parameters('_artifactsLocationSasToken')]"
