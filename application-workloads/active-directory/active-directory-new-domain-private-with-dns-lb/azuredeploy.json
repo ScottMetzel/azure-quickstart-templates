@@ -237,6 +237,7 @@
         "vMExtensionCSInstallRolesNameBase": "CustomScript-InstallRoles",
         "vMExtensionCSInstallDefenderForIdentityNameBase": "CustomScript-InstallDefenderForIdentity",
         "defenderForIdentityContentURIs": "[createArray(concat(parameters('_artifactsLocation'),'installers/Azure%20ATP%20Sensor%20Setup.zip'))]",
+        "defenderForIdentityCommandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Expand-Archive -Path ''.\\Azure ATP Sensor Setup.zip'' -DestinationPath ''.\\'';.\\''Azure ATP Sensor Setup.exe'' /quiet NetFrameworkCommandLineArguments=''/q'' AccessKey=''',parameters('DefenderForIdentityAccessKey'),'''}\"')]",
         "storageAccountName": "[last(split(split(parameters('_artifactsLocation'),'.')[0],'//'))]",
         "copy": [
             {
@@ -598,7 +599,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {},
                 "protectedSettings": {
-                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Expand-Archive -Path '.\\Azure ATP Sensor Setup.zip' -DestinationPath '.\\'}\"",
+                    "commandToExecute": "[variables('defenderForIdentityCommandToExecute')]",
                     "fileUris": "[variables('defenderForIdentityContentURIs')]",
                     "storageAccountName": "[variables('storageAccountName')]",
                     "storageAccountKey": "[parameters('_artifactsLocationSasToken')]"
