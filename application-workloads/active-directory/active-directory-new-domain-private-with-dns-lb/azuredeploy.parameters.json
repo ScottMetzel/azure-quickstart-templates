@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "BaseName": {
-            "value": "replaceme"
+            "value": "SupaDupaADDS"
         },
         "adminUsername": {
             "value": "GEN-UNIQUE"
@@ -16,9 +16,6 @@
         },
         "VMSubnetName": {
             "value": "GEN-VNET-SUBNET1-NAME"
-        },
-        "LBSubnetName": {
-            "value": "GEN-VNET-SUBNET2-NAME"
         }
     }
 }
