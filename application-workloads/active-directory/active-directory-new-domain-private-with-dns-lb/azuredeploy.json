@@ -233,7 +233,7 @@
                     {
                         "name": "IPConfig01",
                         "properties": {
-                            "privateIPAllocationMethod": "Static",
+                            "privateIPAllocationMethod": "[if(greaterOrEquals(length(parameters('VMFirstPrivateStaticIPAddress')),7),'Static','Dynamic')]",
                             "privateIPAddress": "[if(greaterOrEquals(length(parameters('VMFirstPrivateStaticIPAddress')),7),variables('vMPrivateStaticIPAddressArray')[copyIndex('CreateNetworkInterfaces')],json('null'))]",
                             "subnet": {
                                 "id": "[variables('vNetVMSubnetResourceID')]"
