@@ -66,11 +66,7 @@
         },
         "VMAvailabilityZones": {
             "type": "array",
-            "defaultValue": [
-                1,
-                2,
-                3
-            ],
+            "defaultValue": [],
             "metadata": {
                 "description": "The availability zones to use for each VM built. The length of the array should be greater than or equal to the number of VMs to deploy (e.g., 4 VMs to build, then at least 4 availability zones should be listed - '1', '2', '3', '2'. Provide an empty array to avoid using Availability Zones.)"
             }
@@ -122,7 +118,7 @@
         },
         "VMFirstPrivateStaticIPAddress": {
             "type": "string",
-            "defaultValue": "10.0.14.10",
+            "defaultValue": "",
             "metadata": {
                 "description": "The private static IP address to use for the first VM. VMs will use a contiguous IP Address range starting with this address."
             }
