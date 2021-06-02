@@ -19,11 +19,24 @@
                 "description": "The base sequence number used as part of the VM names."
             }
         },
+        "VMCount": {
+            "type": "int",
+            "defaultValue": 1,
+            "minValue": 1,
+            "maxValue": 10,
+            "metadata": {
+                "description": "The number of VMs to create."
+            }
+        },
         "VMSize": {
             "type": "string",
-            "defaultValue": "Standard_DS2_v2",
+            "defaultValue": "Standard_D4s_v4",
+            "allowedValues": [
+                "Standard_DS2_v2",
+                "Standard_D4s_v4"
+            ],
             "metadata": {
-                "description": "Size for the VM.  This sample uses premium disk and requires an 'S' sku."
+                "description": "The size of the virtual machine(s)."
             }
         },
         "VMOSManagedDiskType": {
@@ -37,7 +50,7 @@
                 "StandardSSD_ZRS"
             ],
             "metadata": {
-                "description": "The tier of managed disk to use for the OS disk of the virtual machine."
+                "description": "The storage tier of the managed disk for the OS of the virtual machine(s)."
             }
         },
         "VMDataManagedDiskType": {
@@ -52,16 +65,7 @@
                 "StandardSSD_ZRS"
             ],
             "metadata": {
-                "description": "The tier of managed disk to use for the OS disk of the virtual machine."
-            }
-        },
-        "VMCount": {
-            "type": "int",
-            "defaultValue": 1,
-            "minValue": 1,
-            "maxValue": 10,
-            "metadata": {
-                "description": "The number of VMs to create."
+                "description": "The storage tier of the managed disk for the app drive of the virtual machine(s)."
             }
         },
         "VMAvailabilityZones": {
@@ -71,43 +75,10 @@
                 "description": "The availability zones to use for each VM built. The length of the array should be greater than or equal to the number of VMs to deploy (e.g., 4 VMs to build, then at least 4 availability zones should be listed - '1', '2', '3', '2'. Provide an empty array to avoid using Availability Zones.)"
             }
         },
-        "HybridUseBenefit": {
-            "type": "bool",
-            "defaultValue": true,
-            "metadata": {
-                "description": "Indicates any virtual machiness created should leverage the Hybrid Use Benefit for Windows."
-            }
-        },
-        "adminUsername": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the administrator account of the new VM and domain"
-            }
-        },
-        "adminPassword": {
-            "type": "securestring",
-            "metadata": {
-                "description": "The password for the administrator account of the new VM and domain"
-            }
-        },
-        "DefenderForIdentityAccessKey": {
-            "type": "securestring",
-            "defaultValue": "",
-            "metadata": {
-                "description": "The access key for your Defender for Identity instance, which is needed by the Defender for Identity installer."
-            }
-        },
-        "WorkspaceResourceId": {
-            "type": "string",
-            "defaultValue": "",
-            "metadata": {
-                "description": "The Resource ID of an existing Log Analytics workspace to use with diagnostics on the Load Balancer. Has no effect if 'EnableLoadBalancerDiagnostics' is set to 'false'."
-            }
-        },
         "VNetResourceID": {
             "type": "string",
             "metadata": {
-                "description": "The resource ID for the existing virtual network to use with the frontend load balancer and VMs."
+                "description": "The resource ID of an existing virtual network to use with the virtual machine(s)."
             }
         },
         "VMSubnetName": {
@@ -130,6 +101,65 @@
                 "description": "The DNS servers to use, set on the network interface of each VM. If no servers are specified, the network interface uses the DNS servers specified on the virtual network."
             }
         },
+        "VMEnableAcceleratedNetworking": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Indicates whether accelerated networking should be enabled or disabled on the network interface of the virtual machine."
+            }
+        },
+        "VMEnableHotPatching": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Gets or sets enables customers to patch their Azure VMs without requiring a reboot."
+            }
+        },
+        "VMPatchMode": {
+            "type": "string",
+            "allowedValues": [
+                "AutomaticByOS",
+                "AutomaticByPlatform",
+                "Manual"
+            ],
+            "defaultValue": "Manual",
+            "metadata": {
+                "description": "Gets or sets specifies the mode of VM Guest Patching to IaaS virtual machine."
+            }
+        },
+        "HybridUseBenefit": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Indicates any virtual machiness created should leverage the Hybrid Use Benefit for Windows."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the administrator account for new virtual machine(s), which becomes the first Domain Administrator for the AD domain."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password associated with the username of the administrator account."
+            }
+        },
+        "WorkspaceResourceId": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The Resource ID of an existing Log Analytics workspace to use with diagnostics on the Load Balancer. Has no effect if 'EnableLoadBalancerDiagnostics' is set to 'false'."
+            }
+        },
+        "DefenderForIdentityAccessKey": {
+            "type": "securestring",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The access key for your Defender for Identity instance, which is needed by the Defender for Identity installer."
+            }
+        },
         "TagEnvironment": {
             "type": "string",
             "defaultValue": "Production",
@@ -140,6 +170,20 @@
             ],
             "metadata": {
                 "description": "The value for the 'Environment' tag."
+            }
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "defaultValue": "[deployment().properties.templateLink.uri]",
+            "metadata": {
+                "description": "Typically, the storage blob endpoint URL of an Azure storage account. In general, the location of resources, such as templates and DSC modules, which the template depends on."
+            }
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The token to access '_artifactsLocation'. Auto-generated if using Visual Studio."
             }
         },
         "DeployMonitoringAgentExtension": {
@@ -161,20 +205,6 @@
             "defaultValue": true,
             "metadata": {
                 "description": "Indicates whether the Custom Script Extension which installs Windows Server roles and installs Defender for Identity should be deployed."
-            }
-        },
-        "_artifactsLocation": {
-            "type": "string",
-            "defaultValue": "[deployment().properties.templateLink.uri]",
-            "metadata": {
-                "description": "The location of resources, such as templates and DSC modules, which the template depends on."
-            }
-        },
-        "_artifactsLocationSasToken": {
-            "type": "securestring",
-            "defaultValue": "",
-            "metadata": {
-                "description": "Token to access '_artifactsLocation'. Auto-generated if using Visual Studio."
             }
         }
     },
@@ -239,7 +269,8 @@
                 ],
                 "dnsSettings": {
                     "dnsServers": "[if(greaterOrEquals(length(parameters('VMDNSServers')),1),parameters('VMDNSServers'),json('null'))]"
-                }
+                },
+                "enableAcceleratedNetworking": "[parameters('VMEnableAcceleratedNetworking')]"
             },
             "tags": {
                 "Environment": "[parameters('TagEnvironment')]"
@@ -265,7 +296,11 @@
                 "osProfile": {
                     "computerName": "[variables('vMNameArray')[copyIndex('CreateVirtualMachines')]]",
                     "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]"
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "patchSettings": {
+                        "enableHotpatching": "[parameters('VMEnableHotPatching')]",
+                        "patchMode": "[parameters('VMPatchMode')]"
+                    }
                 },
                 "storageProfile": {
                     "imageReference": {
