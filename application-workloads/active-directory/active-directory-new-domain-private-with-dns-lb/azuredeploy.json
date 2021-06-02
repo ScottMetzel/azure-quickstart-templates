@@ -297,9 +297,11 @@
                     "computerName": "[variables('vMNameArray')[copyIndex('CreateVirtualMachines')]]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
-                    "patchSettings": {
-                        "enableHotpatching": "[parameters('VMEnableHotPatching')]",
-                        "patchMode": "[parameters('VMPatchMode')]"
+                    "windowsConfiguration": {
+                        "patchSettings": {
+                            "enableHotpatching": "[parameters('VMEnableHotPatching')]",
+                            "patchMode": "[parameters('VMPatchMode')]"
+                        }
                     }
                 },
                 "storageProfile": {
