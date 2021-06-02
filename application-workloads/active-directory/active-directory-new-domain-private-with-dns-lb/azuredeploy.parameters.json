@@ -3,19 +3,72 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "BaseName": {
-            "value": "SupaDupaADDS"
+            "value": ""
         },
-        "adminUsername": {
-            "value": "GEN-UNIQUE"
+        "BaseSequenceNumber": {
+            "value": 1
         },
-        "adminPassword": {
-            "value": "GEN-PASSWORD"
+        "VMCount": {
+            "value": 1
+        },
+        "VMSize": {
+            "value": "Standard_D4s_v4"
+        },
+        "VMOSManagedDiskType": {
+            "value": "Premium_LRS"
+        },
+        "VMDataManagedDiskType": {
+            "value": "Premium_LRS"
+        },
+        "VMAvailabilityZones": {
+            "value": [
+                1
+            ]
         },
         "VNetResourceID": {
-            "value": "GEN-VNET-NAME"
+            "value": ""
         },
         "VMSubnetName": {
-            "value": "GEN-VNET-SUBNET1-NAME"
+            "value": ""
+        },
+        "VMFirstPrivateStaticIPAddress": {
+            "value": ""
+        },
+        "VMDNSServers": {
+            "value": []
+        },
+        "VMEnableAcceleratedNetworking": {
+            "value": true
+        },
+        "VMEnableHotPatching": {
+            "value": false
+        },
+        "VMPatchMode": {
+            "value": "Manual"
+        },
+        "HybridUseBenefit": {
+            "value": true
+        },
+        "adminUsername": {
+            "value": ""
+        },
+        "adminPassword": {
+            "value": ""
+        },
+        "WorkspaceResourceId": {
+            "value": ""
+        },
+        "DefenderForIdentityAccessKey": {
+            "value": ""
+        },
+        "TagEnvironment": {
+            "value": "Pre-Production"
+        },
+        "_artifactsLocation": {
+            "value": ""
+        },
+        "_artifactsLocationSasToken": {
+            "value": ""
         }
     }
 }
