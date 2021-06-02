@@ -164,9 +164,8 @@
             "type": "string",
             "defaultValue": "Production",
             "allowedValues": [
-                "Development",
-                "Production",
-                "Test"
+                "Pre-Production",
+                "Production"
             ],
             "metadata": {
                 "description": "The value for the 'Environment' tag."
@@ -298,6 +297,7 @@
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
                     "windowsConfiguration": {
+                        "enableAutomaticUpdates": "[if(equals(parameters('VMPatchMode'),'Manual'),false(),true())]",
                         "patchSettings": {
                             "enableHotpatching": "[parameters('VMEnableHotPatching')]",
                             "patchMode": "[parameters('VMPatchMode')]"
