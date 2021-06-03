@@ -53,21 +53,6 @@
                 "description": "The storage tier of the managed disk for the OS of the virtual machine(s)."
             }
         },
-        "VMDataManagedDiskType": {
-            "type": "string",
-            "defaultValue": "Premium_LRS",
-            "allowedValues": [
-                "Standard_LRS",
-                "Premium_LRS",
-                "StandardSSD_LRS",
-                "UltraSSD_LRS",
-                "Premium_ZRS",
-                "StandardSSD_ZRS"
-            ],
-            "metadata": {
-                "description": "The storage tier of the managed disk for the app drive of the virtual machine(s)."
-            }
-        },
         "VMAvailabilityZones": {
             "type": "array",
             "defaultValue": [],
@@ -320,16 +305,6 @@
                         }
                     },
                     "dataDisks": [
-                        {
-                            "name": "[variables('vMDataDiskNameArray')[copyIndex('CreateVirtualMachines')]]",
-                            "caching": "ReadWrite",
-                            "createOption": "Empty",
-                            "diskSizeGB": 20,
-                            "managedDisk": {
-                                "storageAccountType": "[parameters('VMDataManagedDiskType')]"
-                            },
-                            "lun": 0
-                        }
                     ]
                 },
                 "networkProfile": {

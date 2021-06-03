@@ -17,9 +17,6 @@
         "VMOSManagedDiskType": {
             "value": "Premium_LRS"
         },
-        "VMDataManagedDiskType": {
-            "value": "Premium_LRS"
-        },
         "VMAvailabilityZones": {
             "value": [
                 1
