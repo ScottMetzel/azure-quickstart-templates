@@ -147,7 +147,7 @@
         },
         "TagEnvironment": {
             "type": "string",
-            "defaultValue": "Production",
+            "defaultValue": "Pre-Production",
             "allowedValues": [
                 "Pre-Production",
                 "Production"
@@ -177,7 +177,7 @@
                 "description": "Indicates whether the Monitoring Agent Extension should be deployed."
             }
         },
-        "DeployAntimalwareExtension": {
+        "DeployASCExtension": {
             "type": "bool",
             "defaultValue": true,
             "metadata": {
@@ -350,35 +350,22 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2020-12-01",
-            "name": "[concat(variables('vMNameArray')[copyIndex('AddAntimalwareExtensions')],'/','IaaSAntimalware')]",
+            "name": "[concat(variables('vMNameArray')[copyIndex('AddASCExtensions')],'/','WindowsAgent.AzureSecurityCenter')]",
             "location": "[variables('deploymentRegion')]",
-            "condition": "[parameters('DeployAntimalwareExtension')]",
+            "condition": "[parameters('DeployASCExtension')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddAntimalwareExtensions')],'MMAExtension')]"
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddASCExtensions')],'MMAExtension')]"
             ],
             "copy": {
-                "name": "AddAntimalwareExtensions",
+                "name": "AddASCExtensions",
                 "count": "[parameters('VMCount')]"
             },
             "properties": {
-                "publisher": "Microsoft.Azure.Security",
-                "type": "IaaSAntimalware",
+                "publisher": "Qualys",
+                "type": "WindowsAgent.AzureSecurityCenter",
                 "typeHandlerVersion": "1.0",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "AntimalwareEnabled": true,
-                    "Exclusions": {
-                        "Extensions": "",
-                        "Paths": "",
-                        "Processes": ""
-                    },
-                    "RealtimeProtectionEnabled": "true",
-                    "ScheduledScanSettings": {
-                        "isEnabled": "true",
-                        "day": "",
-                        "scanType": "",
-                        "time": ""
-                    }
                 }
             }
         },
@@ -389,7 +376,7 @@
             "location": "[variables('deploymentRegion')]",
             "condition": "[parameters('DeployCSInstallRolesDefenderExtension')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'IaaSAntimalware')]"
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions',variables('vMNameArray')[copyIndex('AddCustomScriptExtensions')],'WindowsAgent.AzureSecurityCenter')]"
             ],
             "copy": {
                 "name": "AddCustomScriptExtensions",
