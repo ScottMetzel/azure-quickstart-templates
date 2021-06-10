@@ -138,13 +138,6 @@
                 "description": "The Resource ID of an existing Log Analytics workspace to use with diagnostics on the Load Balancer. Has no effect if 'EnableLoadBalancerDiagnostics' is set to 'false'."
             }
         },
-        "DefenderForIdentityAccessKey": {
-            "type": "securestring",
-            "defaultValue": "",
-            "metadata": {
-                "description": "The access key for your Defender for Identity instance, which is needed by the Defender for Identity installer."
-            }
-        },
         "TagEnvironment": {
             "type": "string",
             "defaultValue": "Pre-Production",
@@ -197,8 +190,8 @@
         "vmPrivateStaticIPAddressStringArray": "[if(greaterOrEquals(length(parameters('VMFirstPrivateStaticIPAddress')),7),split(parameters('VMFirstPrivateStaticIPAddress'),'.'),'')]",
         "vNetVMSubnetResourceID": "[concat(parameters('VNetResourceID'),'/subnets/',parameters('VMSubnetName'))]",
         "vMExtensionCSInstallRolesDefenderforIdentityNameBase": "CustomScript-InstallRoles-and-InstallDefenderForIdentity",
-        "defenderForIdentityContentURIs": "[createArray(concat(parameters('_artifactsLocation'),'installers/Azure%20ATP%20Sensor%20Setup.zip'))]",
-        "vMExtensionCSCommandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools;Expand-Archive -Path ''.\\Azure ATP Sensor Setup.zip'' -DestinationPath ''.\\'';.\\''Azure ATP Sensor Setup.exe'' /quiet NetFrameworkCommandLineArguments=''/q'' AccessKey=''',parameters('DefenderForIdentityAccessKey'),'''}\"')]",
+        "defenderForIdentityContentURIs": "[createArray(concat(parameters('_artifactsLocation'),'installers/Azure%20ATP%20Sensor%20Setup.zip'),concat(parameters('_artifactsLocation'),'installers/',if(equals(parameters('TagEnvironment'), 'Pre-Production'),'PreProd-IPSecNegotiateAny.ipsec','IPSecNegotiateAny.ipsec')))]",
+        "vMExtensionCSCommandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -Command \"& {Install-WindowsFeature -Name AD-Domain-Services, DNS -IncludeAllSubFeature -IncludeManagementTools;Expand-Archive -Path ''.\\Azure ATP Sensor Setup.zip'' -DestinationPath ''C:\\Temp\\'';Remove-Item -Path ''.\\Azure ATP Sensor Setup.zip'' -Force;Move-Item -Path .\\', if(equals(parameters('TagEnvironment'), 'Pre-Production'),'PreProd-IPSecNegotiateAny.ipsec','IPSecNegotiateAny.ipsec'),' -Destination C:\\Temp\\;Remove-Item -Path .\\', if(equals(parameters('TagEnvironment'), 'Pre-Production'),'PreProd-IPSecNegotiateAny.ipsec','IPSecNegotiateAny.ipsec'),' -Force}\"')]",
         "storageAccountName": "[last(split(split(parameters('_artifactsLocation'),'.')[0],'//'))]",
         "copy": [
             {
